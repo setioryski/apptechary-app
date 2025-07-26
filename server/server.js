@@ -17,9 +17,11 @@ app.use(express.json()); // Body parser for JSON
 
 // Define Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-// TODO: Add other routes here
-// app.use('/api/products', require('./routes/productRoutes'));
-// app.use('/api/sales', require('./routes/saleRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/sales', require('./routes/saleRoutes'));
+app.use('/api/expenses', require('./routes/expenseRoutes'));
+
 
 app.get('/', (req, res) => {
   res.send('Apothecary POS API Running...');

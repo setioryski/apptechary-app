@@ -79,8 +79,11 @@ const importData = async () => {
     await Product.deleteMany();
 
     // Insert new data
-    // The pre-save hook in the User model will hash the passwords automatically
-    await User.insertMany(users);
+    // We use a loop and .save() to ensure the pre-save hook for password hashing is triggered.
+    for (const user of users) {
+        const newUser = new User(user);
+        await newUser.save();
+    }
     await Product.insertMany(products);
 
     console.log('✅ Data Imported!');

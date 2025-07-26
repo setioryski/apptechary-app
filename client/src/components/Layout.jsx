@@ -27,8 +27,10 @@ const Layout = () => {
                   <>
                     <NavLink to="/admin" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Dashboard</NavLink>
                     <NavLink to="/pos" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>POS</NavLink>
-                    {/* Add future Admin links here */}
                     <NavLink to="/admin/inventory" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Inventory</NavLink>
+                    <NavLink to="/admin/users" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Users</NavLink>
+                    <NavLink to="/admin/expenses" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Expenses</NavLink>
+                    <NavLink to="/admin/sales" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Sales</NavLink>
                   </>
                 )}
                 {user?.role === 'Cashier' && (

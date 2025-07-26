@@ -6,7 +6,12 @@ import LoginPage from './pages/LoginPage';
 import POSPage from './pages/POSPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout'; // We will create this
+import Layout from './components/Layout';
+import InventoryPage from './pages/InventoryPage';
+import UsersPage from './pages/UsersPage';
+import ExpensesPage from './pages/ExpensesPage';
+import SalesReportsPage from './pages/SalesReportsPage';
+
 
 const App = () => {
     const { isAuthenticated, user } = useAuth();
@@ -33,7 +38,26 @@ const App = () => {
                         <AdminDashboard />
                     </ProtectedRoute>
                 } />
-                {/* Add other admin routes like inventory, reports here */}
+                <Route path="/admin/inventory" element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <InventoryPage />
+                    </ProtectedRoute>
+                } />
+                 <Route path="/admin/users" element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <UsersPage />
+                    </ProtectedRoute>
+                } />
+                 <Route path="/admin/expenses" element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <ExpensesPage />
+                    </ProtectedRoute>
+                } />
+                 <Route path="/admin/sales" element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <SalesReportsPage />
+                    </ProtectedRoute>
+                } />
             </Route>
             
             <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} />} />
