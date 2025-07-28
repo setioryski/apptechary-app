@@ -36,3 +36,19 @@ exports.getSales = async (req, res) => {
     res.status(500).json({ message: `Server Error: ${error.message}` });
   }
 };
+
+// @desc    Get sale by ID
+// @route   GET /api/sales/:id
+// @access  Private/Admin
+exports.getSaleById = async (req, res) => {
+    try {
+        const sale = await Sale.findById(req.params.id).populate('cashierId', 'username').populate('items.productId', 'sku');
+        if (sale) {
+            res.json(sale);
+        } else {
+            res.status(404).json({ message: 'Sale not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: `Server Error: ${error.message}` });
+    }
+};
