@@ -1,3 +1,5 @@
+// server/server.js
+
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -21,8 +23,8 @@ app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/sales', require('./routes/saleRoutes'));
 app.use('/api/expenses', require('./routes/expenseRoutes'));
-// The following line for categories has been removed.
-// app.use('/api/categories', require('./routes/categoryRoutes'));
+// The following line for categories has been uncommented.
+app.use('/api/categories', require('./routes/categoryRoutes'));
 
 
 app.get('/', (req, res) => {
