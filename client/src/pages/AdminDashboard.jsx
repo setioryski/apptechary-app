@@ -31,7 +31,7 @@ const AdminDashboard = () => {
         <DashboardCard to="/admin/sales" title="Sales Reports" description="View daily and monthly reports." icon="📊" />
         <DashboardCard to="/admin/users" title="Manage Users" description="Add or edit cashier accounts." icon="👥" />
         <DashboardCard to="/admin/expenses" title="Record Expenses" description="Track operational costs." icon="🧾" />
-        <DashboardCard to="/admin/settings" title="Settings" description="Configure system settings." icon="⚙️" />
+        <DashboardCard to="/admin/categories" title="Manage Categories" description="Add or edit product categories." icon="🏷️" />
       </div>
     </div>
   );

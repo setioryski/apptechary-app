@@ -2,10 +2,10 @@ const Product = require('../models/Product');
 
 // @desc    Get all products
 // @route   GET /api/products
-// @access  Private/Admin
+// @access  Private
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.find({});
+    const products = await Product.find({}).populate('category', 'name');
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: `Server Error: ${error.message}` });
@@ -14,10 +14,10 @@ exports.getProducts = async (req, res) => {
 
 // @desc    Get product by ID
 // @route   GET /api/products/:id
-// @access  Private/Admin
+// @access  Private
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate('category', 'name');
     if (product) {
       res.json(product);
     } else {
@@ -43,8 +43,10 @@ exports.createProduct = async (req, res) => {
       supplier: req.body.supplier,
     });
     const createdProduct = await product.save();
-    res.status(201).json(createdProduct);
-  } catch (error) {
+    const populatedProduct = await Product.findById(createdProduct._id).populate('category', 'name');
+    res.status(201).json(populatedProduct);
+  } catch (error)
+ {
     res.status(500).json({ message: `Server Error: ${error.message}` });
   }
 };
@@ -67,7 +69,8 @@ exports.updateProduct = async (req, res) => {
       product.supplier = supplier;
 
       const updatedProduct = await product.save();
-      res.json(updatedProduct);
+      const populatedProduct = await Product.findById(updatedProduct._id).populate('category', 'name');
+      res.json(populatedProduct);
     } else {
       res.status(404).json({ message: 'Product not found' });
     }

@@ -11,6 +11,7 @@ import InventoryPage from './pages/InventoryPage';
 import UsersPage from './pages/UsersPage';
 import ExpensesPage from './pages/ExpensesPage';
 import SalesReportsPage from './pages/SalesReportsPage';
+import CategoryPage from './pages/CategoryPage';
 
 
 const App = () => {
@@ -56,6 +57,11 @@ const App = () => {
                  <Route path="/admin/sales" element={
                     <ProtectedRoute allowedRoles={['Admin']}>
                         <SalesReportsPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/admin/categories" element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <CategoryPage />
                     </ProtectedRoute>
                 } />
             </Route>

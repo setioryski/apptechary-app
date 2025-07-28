@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 // Load Models
 const User = require('./models/User');
 const Product = require('./models/Product');
+const Category = require('./models/Category');
 
 // Load env vars
 dotenv.config();
@@ -25,51 +26,12 @@ const users = [
   },
 ];
 
-const products = [
-  {
-    name: 'Paracetamol 500mg',
-    sku: 'PC500',
-    category: 'Pain Relief',
-    price: 5000,
-    stock: 150,
-    expiryDate: new Date('2026-12-31'),
-    supplier: 'Pharma Inc.',
-  },
-  {
-    name: 'Vitamin C 1000mg',
-    sku: 'VC1000',
-    category: 'Vitamins',
-    price: 25000,
-    stock: 200,
-    expiryDate: new Date('2025-08-15'),
-    supplier: 'Healthy Living Co.',
-  },
-  {
-    name: 'Amoxicillin 250mg',
-    sku: 'AMX250',
-    category: 'Antibiotics',
-    price: 15000,
-    stock: 80,
-    expiryDate: new Date('2025-10-01'),
-    supplier: 'Pharma Inc.',
-  },
-  {
-    name: 'Cough Syrup 60ml',
-    sku: 'CS60',
-    category: 'Cold & Flu',
-    price: 22000,
-    stock: 60,
-    expiryDate: new Date('2026-05-20'),
-    supplier: 'Med Solutions',
-  },
-  {
-    name: 'Digital Thermometer',
-    sku: 'DT01',
-    category: 'Medical Devices',
-    price: 75000,
-    stock: 40,
-    supplier: 'Med Solutions',
-  },
+const categories = [
+    { name: 'Pain Relief' },
+    { name: 'Vitamins' },
+    { name: 'Antibiotics' },
+    { name: 'Cold & Flu' },
+    { name: 'Medical Devices' }
 ];
 
 const importData = async () => {
@@ -77,13 +39,64 @@ const importData = async () => {
     // Clear existing data
     await User.deleteMany();
     await Product.deleteMany();
+    await Category.deleteMany();
 
-    // Insert new data
-    // We use a loop and .save() to ensure the pre-save hook for password hashing is triggered.
+    // Insert users
     for (const user of users) {
         const newUser = new User(user);
         await newUser.save();
     }
+    
+    // Insert categories
+    const createdCategories = await Category.insertMany(categories);
+
+    const products = [
+      {
+        name: 'Paracetamol 500mg',
+        sku: 'PC500',
+        category: createdCategories.find(c => c.name === 'Pain Relief')._id,
+        price: 5000,
+        stock: 150,
+        expiryDate: new Date('2026-12-31'),
+        supplier: 'Pharma Inc.',
+      },
+      {
+        name: 'Vitamin C 1000mg',
+        sku: 'VC1000',
+        category: createdCategories.find(c => c.name === 'Vitamins')._id,
+        price: 25000,
+        stock: 200,
+        expiryDate: new Date('2025-08-15'),
+        supplier: 'Healthy Living Co.',
+      },
+      {
+        name: 'Amoxicillin 250mg',
+        sku: 'AMX250',
+        category: createdCategories.find(c => c.name === 'Antibiotics')._id,
+        price: 15000,
+        stock: 80,
+        expiryDate: new Date('2025-10-01'),
+        supplier: 'Pharma Inc.',
+      },
+      {
+        name: 'Cough Syrup 60ml',
+        sku: 'CS60',
+        category: createdCategories.find(c => c.name === 'Cold & Flu')._id,
+        price: 22000,
+        stock: 60,
+        expiryDate: new Date('2026-05-20'),
+        supplier: 'Med Solutions',
+      },
+      {
+        name: 'Digital Thermometer',
+        sku: 'DT01',
+        category: createdCategories.find(c => c.name === 'Medical Devices')._id,
+        price: 75000,
+        stock: 40,
+        supplier: 'Med Solutions',
+      },
+    ];
+    
     await Product.insertMany(products);
 
     console.log('✅ Data Imported!');
@@ -98,6 +111,7 @@ const destroyData = async () => {
   try {
     await User.deleteMany();
     await Product.deleteMany();
+    await Category.deleteMany();
 
     console.log('🗑️ Data Destroyed!');
     process.exit();
