@@ -58,16 +58,18 @@ const InventoryPage = () => {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto"
                 >
                     Add New Product
                 </button>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white p-6 rounded-lg shadow-md">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -100,6 +102,41 @@ const InventoryPage = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+                {products.map(product => (
+                    <div key={product._id} className="bg-white p-4 rounded-lg shadow-md">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">{product.name}</h3>
+                                <p className="text-sm text-gray-500">SKU: {product.sku}</p>
+                            </div>
+                            <button
+                                onClick={() => handleOpenModal(product)}
+                                className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full"
+                            >
+                                Edit
+                            </button>
+                        </div>
+                        <div className="mt-4 border-t pt-4">
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-gray-600">Category:</span>
+                                <span className="font-medium text-gray-800">{product.category?.name || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-gray-600">Price:</span>
+                                <span className="font-medium text-gray-800">Rp{product.price.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Stock:</span>
+                                <span className="font-medium text-gray-800">{product.stock}</span>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
 
             {isModalOpen && (
                 <ProductModal

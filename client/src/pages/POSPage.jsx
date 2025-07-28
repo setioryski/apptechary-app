@@ -59,9 +59,8 @@ const POSPage = () => {
     };
 
     try {
-        const { data: newSale } = await api.post('/sales', saleData);
-        const { data: detailedSale } = await api.get(`/sales/${newSale._id}`);
-        setCompletedSale(detailedSale);
+        const { data: populatedSale } = await api.post('/sales', saleData);
+        setCompletedSale(populatedSale); // Use the direct response from the POST request
         setIsCheckoutOpen(false);
         setIsInvoiceOpen(true);
         setCart([]);
