@@ -21,6 +21,8 @@ app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/sales', require('./routes/saleRoutes'));
 app.use('/api/expenses', require('./routes/expenseRoutes'));
+// The following line for categories has been removed.
+// app.use('/api/categories', require('./routes/categoryRoutes'));
 
 
 app.get('/', (req, res) => {

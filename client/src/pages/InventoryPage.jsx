@@ -4,23 +4,29 @@ import ProductModal from '../components/ProductModal';
 
 const InventoryPage = () => {
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
-    const fetchProducts = async () => {
+    const fetchData = async () => {
+        setLoading(true);
         try {
-            const { data } = await api.get('/products');
-            setProducts(data);
+            const [productsRes, categoriesRes] = await Promise.all([
+                api.get('/products'),
+                api.get('/categories')
+            ]);
+            setProducts(productsRes.data);
+            setCategories(categoriesRes.data);
         } catch (error) {
-            console.error("Failed to fetch products", error);
+            console.error("Failed to fetch data", error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchProducts();
+        fetchData();
     }, []);
 
     const handleOpenModal = (product = null) => {
@@ -36,13 +42,12 @@ const InventoryPage = () => {
     const handleSaveProduct = async (productData) => {
         try {
             if (selectedProduct) {
-                // Update product
-                await api.put(`/products/${selectedProduct._id}`, productData);
+                const { data: updatedProduct } = await api.put(`/products/${selectedProduct._id}`, productData);
+                setProducts(products.map(p => p._id === updatedProduct._id ? updatedProduct : p));
             } else {
-                // Create new product
-                await api.post('/products', productData);
+                const { data: newProduct } = await api.post('/products', productData);
+                setProducts([...products, newProduct]);
             }
-            fetchProducts(); // Refresh the product list
             handleCloseModal();
         } catch (error) {
             console.error("Failed to save product", error);
@@ -79,7 +84,7 @@ const InventoryPage = () => {
                             <tr key={product._id}>
                                 <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{product.sku}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{product.category?.name || 'N/A'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">Rp{product.price.toLocaleString('id-ID')}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -99,6 +104,7 @@ const InventoryPage = () => {
             {isModalOpen && (
                 <ProductModal
                     product={selectedProduct}
+                    categories={categories}
                     onClose={handleCloseModal}
                     onSave={handleSaveProduct}
                 />

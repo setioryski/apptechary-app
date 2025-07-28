@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 // Load Models
 const User = require('./models/User');
 const Product = require('./models/Product');
+const Category = require('./models/Category');
 
 // Load env vars
 dotenv.config();
@@ -77,6 +78,7 @@ const importData = async () => {
     // Clear existing data
     await User.deleteMany();
     await Product.deleteMany();
+    await Category.deleteMany(); // This will clear the old categories table
 
     // Insert new data
     // We use a loop and .save() to ensure the pre-save hook for password hashing is triggered.
@@ -84,6 +86,7 @@ const importData = async () => {
         const newUser = new User(user);
         await newUser.save();
     }
+    
     await Product.insertMany(products);
 
     console.log('✅ Data Imported!');
@@ -98,6 +101,7 @@ const destroyData = async () => {
   try {
     await User.deleteMany();
     await Product.deleteMany();
+    await Category.deleteMany();
 
     console.log('🗑️ Data Destroyed!');
     process.exit();

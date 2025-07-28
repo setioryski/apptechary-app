@@ -9,10 +9,11 @@ const {
 } = require('../controllers/productController');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
-router.route('/').get(protect, isAdmin, getProducts).post(protect, isAdmin, createProduct);
+// Cashiers and Admins can view products
+router.route('/').get(protect, getProducts).post(protect, isAdmin, createProduct);
 router
   .route('/:id')
-  .get(protect, isAdmin, getProductById)
+  .get(protect, getProductById)
   .put(protect, isAdmin, updateProduct)
   .delete(protect, isAdmin, deleteProduct);
 

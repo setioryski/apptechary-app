@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Toast from './Toast';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -28,6 +29,7 @@ const Layout = () => {
                     <NavLink to="/admin" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Dashboard</NavLink>
                     <NavLink to="/pos" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>POS</NavLink>
                     <NavLink to="/admin/inventory" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Inventory</NavLink>
+                    <NavLink to="/admin/categories" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Categories</NavLink>
                     <NavLink to="/admin/users" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Users</NavLink>
                     <NavLink to="/admin/expenses" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Expenses</NavLink>
                     <NavLink to="/admin/sales" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Sales</NavLink>
@@ -60,6 +62,8 @@ const Layout = () => {
           <Outlet />
         </div>
       </main>
+
+      <Toast />
     </div>
   );
 };
