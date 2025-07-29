@@ -16,9 +16,23 @@ exports.addSale = async (req, res) => {
   session.startTransaction();
 
   try {
+    const productIds = items.map(item => item.productId);
+    const products = await Product.find({ '_id': { $in: productIds } }).session(session);
+    
+    const saleItems = items.map(item => {
+        const product = products.find(p => p._id.toString() === item.productId);
+        if (!product) {
+            throw new Error(`Product with id ${item.productId} not found.`);
+        }
+        return {
+            ...item,
+            basePrice: product.basePrice // Get basePrice from the database
+        };
+    });
+    
     // Create the sale record
     const sale = new Sale({
-      items,
+      items: saleItems,
       cashierId: req.user._id,
       totalAmount,
       paymentMethod,
@@ -27,7 +41,7 @@ exports.addSale = async (req, res) => {
     const createdSale = await sale.save({ session });
 
     // Decrease stock for each product
-    for (const item of items) {
+    for (const item of saleItems) {
       await Product.findByIdAndUpdate(item.productId, {
         $inc: { stock: -item.quantity }
       }, { session });

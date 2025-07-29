@@ -53,14 +53,20 @@ const POSPage = () => {
 
   const handleConfirmCheckout = async (paymentMethod) => {
     const saleData = {
-        items: cart.map(({ _id, name, price, quantity }) => ({ productId: _id, name, price, quantity })),
+        items: cart.map(({ _id, name, price, basePrice, quantity }) => ({ 
+            productId: _id, 
+            name, 
+            price, 
+            basePrice, 
+            quantity 
+        })),
         totalAmount,
         paymentMethod,
     };
 
     try {
         const { data: populatedSale } = await api.post('/sales', saleData);
-        setCompletedSale(populatedSale); // Use the direct response from the POST request
+        setCompletedSale(populatedSale);
         setIsCheckoutOpen(false);
         setIsInvoiceOpen(true);
         setCart([]);

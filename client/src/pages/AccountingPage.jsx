@@ -79,8 +79,12 @@ const AccountingPage = () => {
     };
 
     const totalRevenue = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
+    const totalCOGS = sales.reduce((acc, sale) => 
+        acc + sale.items.reduce((itemAcc, item) => itemAcc + ((item.basePrice || 0) * item.quantity), 0), 
+    0);
+    const grossProfit = totalRevenue - totalCOGS;
     const totalExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
-    const netIncome = totalRevenue - totalExpenses;
+    const netIncome = grossProfit - totalExpenses;
 
     if (loading) return <div>Loading accounting data...</div>;
 
@@ -89,13 +93,17 @@ const AccountingPage = () => {
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Accounting</h1>
 
             {/* Financial Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div className="bg-green-100 p-4 rounded-lg shadow">
                     <h3 className="text-sm font-medium text-green-800">Total Revenue</h3>
                     <p className="text-2xl font-semibold text-green-900">Rp{totalRevenue.toLocaleString('id-ID')}</p>
                 </div>
+                <div className="bg-yellow-100 p-4 rounded-lg shadow">
+                    <h3 className="text-sm font-medium text-yellow-800">Cost of Goods Sold</h3>
+                    <p className="text-2xl font-semibold text-yellow-900">Rp{totalCOGS.toLocaleString('id-ID')}</p>
+                </div>
                 <div className="bg-red-100 p-4 rounded-lg shadow">
-                    <h3 className="text-sm font-medium text-red-800">Total Expenses</h3>
+                    <h3 className="text-sm font-medium text-red-800">Operating Expenses</h3>
                     <p className="text-2xl font-semibold text-red-900">Rp{totalExpenses.toLocaleString('id-ID')}</p>
                 </div>
                 <div className="bg-sky-100 p-4 rounded-lg shadow">
