@@ -5,11 +5,13 @@ const SaleSchema = new mongoose.Schema({
   items: [{
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     name: { type: String, required: true },
+    basePrice: { type: Number, required: true },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true }
   }],
   totalAmount: { type: Number, required: true },
-  paymentMethod: { type: String, required: true, enum: ['Cash', 'Card', 'Digital'] }
+  paymentMethod: { type: String, required: true, enum: ['Cash', 'Card', 'Digital'] },
+  status: { type: String, required: true, enum: ['Completed', 'Retracted'], default: 'Completed' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Sale', SaleSchema);

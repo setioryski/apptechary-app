@@ -37,6 +37,7 @@ exports.createProduct = async (req, res) => {
       name: req.body.name,
       sku: req.body.sku,
       category: req.body.category,
+      basePrice: req.body.basePrice,
       price: req.body.price,
       stock: req.body.stock,
       expiryDate: req.body.expiryDate,
@@ -56,13 +57,14 @@ exports.createProduct = async (req, res) => {
 // @access  Private/Admin
 exports.updateProduct = async (req, res) => {
   try {
-    const { name, sku, category, price, stock, expiryDate, supplier } = req.body;
+    const { name, sku, category, basePrice, price, stock, expiryDate, supplier } = req.body;
     const product = await Product.findById(req.params.id);
 
     if (product) {
       product.name = name;
       product.sku = sku;
       product.category = category;
+      product.basePrice = basePrice;
       product.price = price;
       product.stock = stock;
       product.expiryDate = expiryDate;
