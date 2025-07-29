@@ -31,7 +31,7 @@ const Layout = () => {
                     <NavLink to="/admin/inventory" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Inventory</NavLink>
                     <NavLink to="/admin/categories" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Categories</NavLink>
                     <NavLink to="/admin/users" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Users</NavLink>
-                    <NavLink to="/admin/expenses" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Expenses</NavLink>
+                    <NavLink to="/admin/accounting" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Accounting</NavLink>
                     <NavLink to="/admin/sales" className={({isActive}) => `${commonLinkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}>Sales</NavLink>
                   </>
                 )}

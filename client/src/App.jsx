@@ -9,7 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import InventoryPage from './pages/InventoryPage';
 import UsersPage from './pages/UsersPage';
-import ExpensesPage from './pages/ExpensesPage';
+import AccountingPage from './pages/AccountingPage'; // Renamed from ExpensesPage
 import SalesReportsPage from './pages/SalesReportsPage';
 import CategoryPage from './pages/CategoryPage';
 
@@ -49,9 +49,9 @@ const App = () => {
                         <UsersPage />
                     </ProtectedRoute>
                 } />
-                 <Route path="/admin/expenses" element={
+                 <Route path="/admin/accounting" element={ // Updated route
                     <ProtectedRoute allowedRoles={['Admin']}>
-                        <ExpensesPage />
+                        <AccountingPage />
                     </ProtectedRoute>
                 } />
                  <Route path="/admin/sales" element={

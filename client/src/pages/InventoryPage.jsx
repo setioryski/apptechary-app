@@ -76,8 +76,10 @@ const InventoryPage = () => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Price</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -87,8 +89,10 @@ const InventoryPage = () => {
                                 <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{product.sku}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{product.category?.name || 'N/A'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">Rp{product.basePrice.toLocaleString('id-ID')}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">Rp{product.price.toLocaleString('id-ID')}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{product.expiryDate ? new Date(product.expiryDate).toLocaleDateString() : 'N/A'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button
                                         onClick={() => handleOpenModal(product)}
@@ -120,17 +124,25 @@ const InventoryPage = () => {
                             </button>
                         </div>
                         <div className="mt-4 border-t pt-4">
-                            <div className="flex justify-between text-sm mb-2">
+                             <div className="flex justify-between text-sm mb-2">
                                 <span className="text-gray-600">Category:</span>
                                 <span className="font-medium text-gray-800">{product.category?.name || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between text-sm mb-2">
-                                <span className="text-gray-600">Price:</span>
+                                <span className="text-gray-600">Base Price:</span>
+                                <span className="font-medium text-gray-800">Rp{product.basePrice.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-gray-600">Selling Price:</span>
                                 <span className="font-medium text-gray-800">Rp{product.price.toLocaleString('id-ID')}</span>
                             </div>
-                            <div className="flex justify-between text-sm">
+                            <div className="flex justify-between text-sm mb-2">
                                 <span className="text-gray-600">Stock:</span>
                                 <span className="font-medium text-gray-800">{product.stock}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Expiry Date:</span>
+                                <span className="font-medium text-gray-800">{product.expiryDate ? new Date(product.expiryDate).toLocaleDateString() : 'N/A'}</span>
                             </div>
                         </div>
                     </div>

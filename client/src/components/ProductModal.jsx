@@ -5,6 +5,7 @@ const ProductModal = ({ product, categories, onClose, onSave }) => {
         name: '',
         sku: '',
         category: '',
+        basePrice: '',
         price: '',
         stock: '',
         expiryDate: '',
@@ -17,6 +18,7 @@ const ProductModal = ({ product, categories, onClose, onSave }) => {
                 name: product.name,
                 sku: product.sku,
                 category: product.category?._id || '',
+                basePrice: product.basePrice || '',
                 price: product.price,
                 stock: product.stock,
                 expiryDate: product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : '',
@@ -51,7 +53,8 @@ const ProductModal = ({ product, categories, onClose, onSave }) => {
                             <option key={cat._id} value={cat._id}>{cat.name}</option>
                         ))}
                     </select>
-                    <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Price" className="w-full p-2 border rounded" required />
+                    <input type="number" name="basePrice" value={formData.basePrice} onChange={handleChange} placeholder="Base Price" className="w-full p-2 border rounded" required />
+                    <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Selling Price" className="w-full p-2 border rounded" required />
                     <input type="number" name="stock" value={formData.stock} onChange={handleChange} placeholder="Stock" className="w-full p-2 border rounded" required />
                     <input type="date" name="expiryDate" value={formData.expiryDate} onChange={handleChange} className="w-full p-2 border rounded" />
                     <input type="text" name="supplier" value={formData.supplier} onChange={handleChange} placeholder="Supplier" className="w-full p-2 border rounded" />
