@@ -29,3 +29,20 @@ exports.createExpense = async (req, res) => {
     res.status(500).json({ message: `Server Error: ${error.message}` });
   }
 };
+
+// @desc    Delete an expense
+// @route   DELETE /api/expenses/:id
+// @access  Private/Admin
+exports.deleteExpense = async (req, res) => {
+    try {
+        const expense = await Expense.findById(req.params.id);
+        if (expense) {
+            await expense.deleteOne();
+            res.json({ message: 'Expense removed' });
+        } else {
+            res.status(404).json({ message: 'Expense not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: `Server Error: ${error.message}` });
+    }
+};
