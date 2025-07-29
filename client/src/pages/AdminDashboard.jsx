@@ -32,6 +32,7 @@ const AdminDashboard = () => {
         <DashboardCard to="/admin/users" title="Manage Users" description="Add or edit cashier accounts." icon="👥" />
         <DashboardCard to="/admin/accounting" title="Accounting" description="Track income & expenses." icon="🧾" />
         <DashboardCard to="/admin/categories" title="Manage Categories" description="Add or edit product categories." icon="🏷️" />
+        <DashboardCard to="/admin/reports/expired-inventory" title="Expired Stock" description="View expired & at-risk items." icon="⚠️" />
       </div>
     </div>
   );

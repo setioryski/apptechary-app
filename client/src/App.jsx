@@ -12,6 +12,7 @@ import UsersPage from './pages/UsersPage';
 import AccountingPage from './pages/AccountingPage'; // Renamed from ExpensesPage
 import SalesReportsPage from './pages/SalesReportsPage';
 import CategoryPage from './pages/CategoryPage';
+import ExpiredInventoryReport from './pages/ExpiredInventoryReport'; // New import
 
 
 const App = () => {
@@ -62,6 +63,11 @@ const App = () => {
                 <Route path="/admin/categories" element={
                     <ProtectedRoute allowedRoles={['Admin']}>
                         <CategoryPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/admin/reports/expired-inventory" element={ // New Route
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <ExpiredInventoryReport />
                     </ProtectedRoute>
                 } />
             </Route>

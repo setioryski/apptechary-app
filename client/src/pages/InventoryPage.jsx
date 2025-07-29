@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import ProductModal from '../components/ProductModal';
+import StockAdjustmentModal from '../components/StockAdjustmentModal.jsx'; // Corrected import path
+import { useToast } from '../context/ToastContext'; 
 
 const InventoryPage = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+    const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false); 
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const { showToast } = useToast(); 
 
     const fetchData = async () => {
         setLoading(true);
@@ -20,6 +24,7 @@ const InventoryPage = () => {
             setCategories(categoriesRes.data);
         } catch (error) {
             console.error("Failed to fetch data", error);
+            showToast('Failed to load inventory data.', 'error');
         } finally {
             setLoading(false);
         }
@@ -29,28 +34,49 @@ const InventoryPage = () => {
         fetchData();
     }, []);
 
-    const handleOpenModal = (product = null) => {
+    const handleOpenProductModal = (product = null) => {
         setSelectedProduct(product);
-        setIsModalOpen(true);
+        setIsProductModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleOpenAdjustmentModal = (product) => { 
+        setSelectedProduct(product);
+        setIsAdjustmentModalOpen(true);
+    };
+
+    const handleCloseModals = () => {
+        setIsProductModalOpen(false);
+        setIsAdjustmentModalOpen(false);
         setSelectedProduct(null);
     };
 
     const handleSaveProduct = async (productData) => {
         try {
-            if (selectedProduct) {
+            if (selectedProduct && selectedProduct._id) {
                 const { data: updatedProduct } = await api.put(`/products/${selectedProduct._id}`, productData);
                 setProducts(products.map(p => p._id === updatedProduct._id ? updatedProduct : p));
+                showToast('Product updated successfully!', 'success');
             } else {
                 const { data: newProduct } = await api.post('/products', productData);
                 setProducts([...products, newProduct]);
+                showToast('Product added successfully!', 'success');
             }
-            handleCloseModal();
+            handleCloseModals();
         } catch (error) {
             console.error("Failed to save product", error);
+            showToast('Failed to save product.', 'error');
+        }
+    };
+
+    const handleSaveAdjustment = async (adjustmentData) => {
+        try {
+            await api.post('/adjustments', adjustmentData);
+            showToast('Stock adjusted successfully!', 'success');
+            fetchData(); // Refresh data
+            handleCloseModals();
+        } catch (error) {
+            console.error("Failed to save adjustment", error);
+            showToast(error.response?.data?.message || 'Failed to adjust stock.', 'error');
         }
     };
 
@@ -61,7 +87,7 @@ const InventoryPage = () => {
             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
                 <button
-                    onClick={() => handleOpenModal()}
+                    onClick={() => handleOpenProductModal()}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto"
                 >
                     Add New Product
@@ -93,9 +119,15 @@ const InventoryPage = () => {
                                 <td className="px-6 py-4 whitespace-nowrap">Rp{product.price.toLocaleString('id-ID')}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{product.expiryDate ? new Date(product.expiryDate).toLocaleDateString() : 'N/A'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <button
-                                        onClick={() => handleOpenModal(product)}
+                                        onClick={() => handleOpenAdjustmentModal(product)}
+                                        className="text-green-600 hover:text-green-900"
+                                    >
+                                        Adjust
+                                    </button>
+                                    <button
+                                        onClick={() => handleOpenProductModal(product)}
                                         className="text-indigo-600 hover:text-indigo-900"
                                     >
                                         Edit
@@ -116,12 +148,20 @@ const InventoryPage = () => {
                                 <h3 className="text-lg font-bold text-gray-900">{product.name}</h3>
                                 <p className="text-sm text-gray-500">SKU: {product.sku}</p>
                             </div>
-                            <button
-                                onClick={() => handleOpenModal(product)}
-                                className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full"
-                            >
-                                Edit
-                            </button>
+                            <div>
+                                <button
+                                    onClick={() => handleOpenAdjustmentModal(product)}
+                                    className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full mb-2 w-full text-center"
+                                >
+                                    Adjust
+                                </button>
+                                <button
+                                    onClick={() => handleOpenProductModal(product)}
+                                    className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full w-full text-center"
+                                >
+                                    Edit
+                                </button>
+                            </div>
                         </div>
                         <div className="mt-4 border-t pt-4">
                              <div className="flex justify-between text-sm mb-2">
@@ -150,12 +190,19 @@ const InventoryPage = () => {
             </div>
 
 
-            {isModalOpen && (
+            {isProductModalOpen && (
                 <ProductModal
                     product={selectedProduct}
                     categories={categories}
-                    onClose={handleCloseModal}
+                    onClose={handleCloseModals}
                     onSave={handleSaveProduct}
+                />
+            )}
+            {isAdjustmentModalOpen && (
+                <StockAdjustmentModal
+                    product={selectedProduct}
+                    onClose={handleCloseModals}
+                    onSave={handleSaveAdjustment}
                 />
             )}
         </div>
