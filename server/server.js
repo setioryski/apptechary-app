@@ -24,7 +24,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/sales', require('./routes/saleRoutes'));
 app.use('/api/expenses', require('./routes/expenseRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
-app.use('/api/adjustments', require('./routes/adjustmentRoutes')); // New route
+app.use('/api/settings', require('./routes/settingsRoutes')); // <-- ADD THIS LINE
 
 
 app.get('/', (req, res) => {

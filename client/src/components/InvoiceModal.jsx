@@ -1,13 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api';
 
 const InvoiceModal = ({ sale, onClose }) => {
+    const [settings, setSettings] = useState({
+        companyName: 'Apothecary POS',
+        address: 'Medan, North Sumatra',
+    });
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const { data } = await api.get('/settings');
+                if (data) {
+                    setSettings(data);
+                }
+            } catch (error) {
+                console.error("Could not fetch settings for invoice, using defaults.", error);
+            }
+        };
+        fetchSettings();
+    }, []);
+
     if (!sale) return null;
 
     const handlePrint = () => {
         const printContent = document.getElementById('invoice-print-area').innerHTML;
         const originalContents = document.body.innerHTML;
-        
-        // Temporarily replace the body content with the invoice content for printing
+
         document.body.innerHTML = `
             <html>
                 <head>
@@ -24,12 +43,10 @@ const InvoiceModal = ({ sale, onClose }) => {
                 </body>
             </html>
         `;
-        
+
         window.print();
-        
-        // Restore the original content
+
         document.body.innerHTML = originalContents;
-        // The component will be unmounted/remounted by the parent, but a reload ensures scripts are re-run if needed.
         window.location.reload();
     };
 
@@ -43,9 +60,10 @@ const InvoiceModal = ({ sale, onClose }) => {
                             <h2 className="text-2xl font-bold text-gray-800">Invoice</h2>
                             <p className="text-sm text-gray-500 break-all">ID: {sale._id}</p>
                         </div>
+                        {/* THIS SECTION IS NOW DYNAMIC */}
                         <div className="text-right">
-                            <h3 className="text-lg font-semibold text-sky-800">Apothecary POS</h3>
-                            <p className="text-sm text-gray-500">Medan, North Sumatra</p>
+                            <h3 className="text-lg font-semibold text-sky-800">{settings.companyName}</h3>
+                            <p className="text-sm text-gray-500">{settings.address}</p>
                         </div>
                     </div>
 

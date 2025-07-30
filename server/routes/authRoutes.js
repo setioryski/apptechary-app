@@ -10,6 +10,6 @@ router.post('/login', loginUser);
 // This route is protected. Only a logged-in Admin can create new users.
 // To create the FIRST Admin, you can temporarily remove the 'protect' and 'isAdmin' middleware,
 // run the server, register the Admin using a tool like Postman, then add the middleware back.
-router.post('/register', registerUser); 
+router.post('/register', registerUser);     
 
 module.exports = router;

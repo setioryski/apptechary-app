@@ -9,11 +9,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import InventoryPage from './pages/InventoryPage';
 import UsersPage from './pages/UsersPage';
-import AccountingPage from './pages/AccountingPage'; // Renamed from ExpensesPage
+import AccountingPage from './pages/AccountingPage';
 import SalesReportsPage from './pages/SalesReportsPage';
 import CategoryPage from './pages/CategoryPage';
-import ExpiredInventoryReport from './pages/ExpiredInventoryReport'; // New import
-
+import SettingsPage from './pages/SettingsPage'; // <-- IMPORT THIS
 
 const App = () => {
     const { isAuthenticated, user } = useAuth();
@@ -50,7 +49,7 @@ const App = () => {
                         <UsersPage />
                     </ProtectedRoute>
                 } />
-                 <Route path="/admin/accounting" element={ // Updated route
+                 <Route path="/admin/accounting" element={
                     <ProtectedRoute allowedRoles={['Admin']}>
                         <AccountingPage />
                     </ProtectedRoute>
@@ -65,9 +64,10 @@ const App = () => {
                         <CategoryPage />
                     </ProtectedRoute>
                 } />
-                <Route path="/admin/reports/expired-inventory" element={ // New Route
+                {/* ADD THIS ROUTE */}
+                <Route path="/admin/settings" element={
                     <ProtectedRoute allowedRoles={['Admin']}>
-                        <ExpiredInventoryReport />
+                        <SettingsPage />
                     </ProtectedRoute>
                 } />
             </Route>
