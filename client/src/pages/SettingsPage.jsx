@@ -3,7 +3,7 @@ import api from '../services/api';
 import { useToast } from '../context/ToastContext';
 
 const SettingsPage = () => {
-    const [settings, setSettings] = useState({ companyName: '', address: '' });
+    const [settings, setSettings] = useState({ companyName: '', address: '', expiringSoonDays: 30 });
     const [loading, setLoading] = useState(true);
     const { showToast } = useToast();
 
@@ -15,6 +15,7 @@ const SettingsPage = () => {
                 setSettings({
                     companyName: data.companyName || '',
                     address: data.address || '',
+                    expiringSoonDays: data.expiringSoonDays || 30,
                 });
             }
         } catch (error) {
@@ -79,6 +80,20 @@ const SettingsPage = () => {
                             placeholder="e.g., Medan, North Sumatra"
                             className="mt-1 w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                         ></textarea>
+                    </div>
+                    <div>
+                        <label htmlFor="expiringSoonDays" className="block text-sm font-medium text-gray-700">
+                            Expiring Soon Threshold (Days)
+                        </label>
+                        <input
+                            type="number"
+                            name="expiringSoonDays"
+                            id="expiringSoonDays"
+                            value={settings.expiringSoonDays}
+                            onChange={handleChange}
+                            className="mt-1 w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Set the warning period for expiring products on the dashboard.</p>
                     </div>
                     <div className="flex justify-end">
                         <button

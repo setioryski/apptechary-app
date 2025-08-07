@@ -1,4 +1,28 @@
 const Product = require('../models/Product');
+const Settings = require('../models/Settings'); // Import Settings model
+
+// @desc    Get expiring products based on settings
+// @route   GET /api/products/expiring-soon
+// @access  Private/Admin
+exports.getExpiringProducts = async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    const expiringSoonDays = settings ? settings.expiringSoonDays : 30; // Default to 30 if no settings
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const thresholdDate = new Date();
+    thresholdDate.setDate(today.getDate() + expiringSoonDays);
+
+    const products = await Product.find({
+      expiryDate: { $gte: today, $lte: thresholdDate },
+    }).sort({ expiryDate: 'asc' });
+    
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: `Server Error: ${error.message}` });
+  }
+};
 
 // @desc    Get all products
 // @route   GET /api/products

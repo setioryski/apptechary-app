@@ -21,31 +21,34 @@ const AdminDashboard = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [expiringProducts, setExpiringProducts] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  const [settings, setSettings] = useState({ expiringSoonDays: 30 });
   const [loading, setLoading] = useState(true);
 
-  const fetchExpiringProducts = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const { data } = await api.get('/products');
-      const today = new Date();
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(today.getDate() + 30);
+      const [expiringRes, topProductsRes, settingsRes] = await Promise.all([
+        api.get('/products/expiring-soon'),
+        api.get('/sales/topproducts'),
+        api.get('/settings')
+      ]);
 
-      const filtered = data
-        .filter(p => p.expiryDate && new Date(p.expiryDate) <= thirtyDaysFromNow && new Date(p.expiryDate) >= today)
-        .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate)); // Sort by soonest to expire
-
-      setExpiringProducts(filtered);
+      setExpiringProducts(expiringRes.data);
+      setTopProducts(topProductsRes.data);
+      if (settingsRes.data) {
+        setSettings(settingsRes.data);
+      }
     } catch (error) {
-      console.error("Failed to fetch products for expiry check", error);
-      showToast('Could not load expiring products list.', 'error');
+      console.error("Failed to fetch dashboard data", error);
+      showToast('Could not load dashboard data.', 'error');
     } finally {
       setLoading(false);
     }
   }, [showToast]);
 
   useEffect(() => {
-    fetchExpiringProducts();
-  }, [fetchExpiringProducts]);
+    fetchData();
+  }, [fetchData]);
 
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
@@ -59,45 +62,77 @@ const AdminDashboard = () => {
         <DashboardCard to="/pos" title="POS Terminal" description="Start a new sale transaction." icon="💰" />
         <DashboardCard to="/admin/inventory" title="Manage Inventory" description="Add, edit, and track products." icon="📦" />
         <DashboardCard to="/admin/sales" title="Sales Reports" description="View daily and monthly reports." icon="📊" />
+        <DashboardCard to="/admin/reports/all-selling" title="All Selling Products" description="View all products sold." icon="📈" />
         <DashboardCard to="/admin/users" title="Manage Users" description="Add or edit cashier accounts." icon="👥" />
         <DashboardCard to="/admin/accounting" title="Accounting" description="Track income & expenses." icon="🧾" />
         <DashboardCard to="/admin/categories" title="Manage Categories" description="Add or edit product categories." icon="🏷️" />
         <DashboardCard to="/admin/settings" title="Settings" description="Manage store information." icon="⚙️" />
       </div>
 
-      {/* Expiring Products Section */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Products Expiring Soon (Next 30 Days)</h2>
-        {loading ? (
-            <p>Loading expiring products...</p>
-        ) : expiringProducts.length > 0 ? (
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Expiry Date</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {expiringProducts.map(product => (
-                            <tr key={product._id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{product.name}</td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{product.sku}</td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{product.stock}</td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600 font-medium">
-                                    {new Date(product.expiryDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        ) : (
-            <p className="text-gray-500">No products are expiring in the next 30 days.</p>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        {/* Top Selling Products Section */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Top 5 Selling Products</h2>
+          {loading ? (
+              <p>Loading top products...</p>
+          ) : topProducts.length > 0 ? (
+              <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                          <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity Sold</th>
+                          </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                          {topProducts.map(product => (
+                              <tr key={product._id} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{product.name}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{product.totalQuantity}</td>
+                              </tr>
+                          ))}
+                      </tbody>
+                  </table>
+              </div>
+          ) : (
+              <p className="text-gray-500">No sales data available yet.</p>
+          )}
+        </div>
+        
+        {/* Expiring Products Section */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Products Expiring Soon (Next {settings.expiringSoonDays} Days)</h2>
+          {loading ? (
+              <p>Loading expiring products...</p>
+          ) : expiringProducts.length > 0 ? (
+              <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                          <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Expiry Date</th>
+                          </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                          {expiringProducts.map(product => (
+                              <tr key={product._id} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{product.name}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{product.sku}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{product.stock}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600 font-medium">
+                                      {new Date(product.expiryDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                  </td>
+                              </tr>
+                          ))}
+                      </tbody>
+                  </table>
+              </div>
+          ) : (
+              <p className="text-gray-500">No products are expiring in the next {settings.expiringSoonDays} days.</p>
+          )}
+        </div>
       </div>
     </div>
   );

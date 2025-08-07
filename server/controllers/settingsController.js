@@ -11,6 +11,7 @@ exports.getSettings = async (req, res) => {
       settings = await Settings.create({
         companyName: 'Apothecary POS',
         address: 'Medan, North Sumatra',
+        expiringSoonDays: 30, // Default value
       });
     }
     res.json(settings);
@@ -23,12 +24,12 @@ exports.getSettings = async (req, res) => {
 // @route   POST /api/settings
 // @access  Private/Admin
 exports.updateSettings = async (req, res) => {
-  const { companyName, address } = req.body;
+  const { companyName, address, expiringSoonDays } = req.body;
   try {
     // Use findOneAndUpdate with upsert to create the document if it doesn't exist
     const updatedSettings = await Settings.findOneAndUpdate(
       {}, // find any document
-      { $set: { companyName, address } },
+      { $set: { companyName, address, expiringSoonDays } },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
     res.json(updatedSettings);

@@ -6,11 +6,16 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
+  getExpiringProducts, // <-- Import this
 } = require('../controllers/productController');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
 // Cashiers and Admins can view products
 router.route('/').get(protect, getProducts).post(protect, isAdmin, createProduct);
+
+// Route to get expiring products
+router.route('/expiring-soon').get(protect, isAdmin, getExpiringProducts);
+
 router
   .route('/:id')
   .get(protect, getProductById)

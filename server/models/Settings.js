@@ -11,6 +11,11 @@ const SettingsSchema = new mongoose.Schema({
     required: true,
     default: 'Medan, North Sumatra',
   },
+  expiringSoonDays: {
+    type: Number,
+    required: true,
+    default: 30,
+  }
 }, {
   // Use a single document for settings. Capped collection of size 1.
   capped: { size: 1024, max: 1 },

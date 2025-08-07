@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { addSale, getSales, getSaleById, retractSale } = require('../controllers/saleController');
+const { addSale, getSales, getSaleById, retractSale, getTopProducts, getAllSellingProducts } = require('../controllers/saleController');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
 router.route('/')
     .post(protect, addSale)
     .get(protect, isAdmin, getSales);
+
+router.get('/topproducts', protect, isAdmin, getTopProducts);
+router.get('/allselling', protect, isAdmin, getAllSellingProducts);
 
 router.route('/:id')
     .get(protect, isAdmin, getSaleById);

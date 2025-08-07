@@ -2,6 +2,53 @@ const mongoose = require('mongoose');
 const Sale = require('../models/Sale');
 const Product = require('../models/Product');
 
+// @desc    Get all selling products
+// @route   GET /api/sales/allselling
+// @access  Private/Admin
+exports.getAllSellingProducts = async (req, res) => {
+  try {
+    const allSellingProducts = await Sale.aggregate([
+      { $match: { status: 'Completed' } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.productId',
+          name: { $first: '$items.name' },
+          totalQuantity: { $sum: '$items.quantity' },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+    ]);
+    res.json(allSellingProducts);
+  } catch (error) {
+    res.status(500).json({ message: `Server Error: ${error.message}` });
+  }
+};
+
+// @desc    Get top selling products
+// @route   GET /api/sales/topproducts
+// @access  Private/Admin
+exports.getTopProducts = async (req, res) => {
+  try {
+    const topProducts = await Sale.aggregate([
+      { $match: { status: 'Completed' } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.productId',
+          name: { $first: '$items.name' },
+          totalQuantity: { $sum: '$items.quantity' },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 5 },
+    ]);
+    res.json(topProducts);
+  } catch (error) {
+    res.status(500).json({ message: `Server Error: ${error.message}` });
+  }
+};
+
 // @desc    Create new sale
 // @route   POST /api/sales
 // @access  Private
