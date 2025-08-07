@@ -76,7 +76,21 @@ const AdminDashboard = () => {
           {loading ? (
               <p>Loading top products...</p>
           ) : topProducts.length > 0 ? (
-              <div className="overflow-x-auto">
+            <>
+              {/* Mobile List View */}
+              <div className="md:hidden">
+                  <ul className="divide-y divide-gray-200">
+                      {topProducts.map(product => (
+                          <li key={product._id} className="py-3 flex justify-between items-center">
+                              <span className="text-sm text-gray-700">{product.name}</span>
+                              <span className="text-sm font-medium text-gray-900">{product.totalQuantity} sold</span>
+                          </li>
+                      ))}
+                  </ul>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                           <tr>
@@ -94,6 +108,7 @@ const AdminDashboard = () => {
                       </tbody>
                   </table>
               </div>
+            </>
           ) : (
               <p className="text-gray-500">No sales data available yet.</p>
           )}
@@ -105,9 +120,9 @@ const AdminDashboard = () => {
           {loading ? (
               <p>Loading expiring products...</p>
           ) : expiringProducts.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="overflow-auto max-h-60">
                   <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gray-50 sticky top-0">
                           <tr>
                               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
                               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
