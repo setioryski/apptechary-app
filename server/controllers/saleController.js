@@ -65,7 +65,7 @@ exports.addSale = async (req, res) => {
   try {
     const productIds = items.map(item => item.productId);
     const products = await Product.find({ '_id': { $in: productIds } }).session(session);
-    
+
     const saleItems = items.map(item => {
         const product = products.find(p => p._id.toString() === item.productId);
         if (!product) {
@@ -76,7 +76,7 @@ exports.addSale = async (req, res) => {
             basePrice: product.basePrice // Get basePrice from the database
         };
     });
-    
+
     // Create the sale record
     const sale = new Sale({
       items: saleItems,
@@ -95,7 +95,7 @@ exports.addSale = async (req, res) => {
     }
 
     await session.commitTransaction();
-    
+
     // Populate cashier info for the response
     const populatedSale = await Sale.findById(createdSale._id).populate('cashierId', 'username');
     res.status(201).json(populatedSale);
@@ -140,7 +140,7 @@ exports.retractSale = async (req, res) => {
         const updatedSale = await sale.save({ session });
 
         await session.commitTransaction();
-        
+
         const populatedSale = await Sale.findById(updatedSale._id).populate('cashierId', 'username');
         res.json(populatedSale);
 
@@ -179,4 +179,31 @@ exports.getSaleById = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: `Server Error: ${error.message}` });
     }
+};
+
+// @desc    Get sales for the current day for all users
+// @route   GET /api/sales/today
+// @access  Private
+exports.getTodaysSales = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const sales = await Sale.find({
+      createdAt: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+      status: 'Completed',
+    }).sort({ createdAt: -1 }).populate('cashierId', 'username'); // <-- POPULATE aDDED
+
+    const totalRevenue = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
+
+    res.json({ sales, totalRevenue });
+  } catch (error) {
+    res.status(500).json({ message: `Server Error: ${error.message}` });
+  }
 };

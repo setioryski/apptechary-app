@@ -3,6 +3,7 @@ import api from '../services/api';
 import CheckoutModal from '../components/CheckoutModal';
 import InvoiceModal from '../components/InvoiceModal';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const POSPage = () => {
   const [cart, setCart] = useState([]);
@@ -13,6 +14,25 @@ const POSPage = () => {
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [completedSale, setCompletedSale] = useState(null);
   const { showToast } = useToast();
+  const { user } = useAuth();
+
+  const [todaysSales, setTodaysSales] = useState([]);
+  const [todaysRevenue, setTodaysRevenue] = useState(0);
+  const [loadingSales, setLoadingSales] = useState(true);
+
+  const fetchTodaysSales = async () => {
+    setLoadingSales(true);
+    try {
+      const { data } = await api.get('/sales/today');
+      setTodaysSales(data.sales);
+      setTodaysRevenue(data.totalRevenue);
+    } catch (error) {
+      console.error("Failed to fetch today's sales", error);
+      showToast("Could not load today's sales.", 'error');
+    } finally {
+      setLoadingSales(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -27,7 +47,9 @@ const POSPage = () => {
         setLoading(false);
       }
     };
+
     fetchProducts();
+    fetchTodaysSales();
   }, [showToast]);
 
   const addToCart = (product) => {
@@ -53,12 +75,12 @@ const POSPage = () => {
 
   const handleConfirmCheckout = async (paymentMethod) => {
     const saleData = {
-        items: cart.map(({ _id, name, price, basePrice, quantity }) => ({ 
-            productId: _id, 
-            name, 
-            price, 
-            basePrice, 
-            quantity 
+        items: cart.map(({ _id, name, price, basePrice, quantity }) => ({
+            productId: _id,
+            name,
+            price,
+            basePrice,
+            quantity
         })),
         totalAmount,
         paymentMethod,
@@ -71,6 +93,7 @@ const POSPage = () => {
         setIsInvoiceOpen(true);
         setCart([]);
         showToast('Sale completed successfully!', 'success');
+        fetchTodaysSales();
     } catch (error) {
         console.error("Failed to create sale", error);
         showToast(error.response?.data?.message || 'Failed to complete sale.', 'error');
@@ -78,9 +101,9 @@ const POSPage = () => {
   };
 
   const totalAmount = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-  
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.sku.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -92,7 +115,7 @@ const POSPage = () => {
         {/* Products Section */}
         <div className="lg:w-2/3 flex flex-col">
             <div className="mb-4">
-            <input 
+            <input
                 type="text"
                 placeholder="🔍 Scan barcode or search product by name/SKU..."
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -113,7 +136,7 @@ const POSPage = () => {
             </div>
         </div>
 
-        {/* Cart Section */}
+        {/* Cart & Sales Info Section */}
         <div className="lg:w-1/3 bg-white p-4 rounded-lg shadow-sm flex flex-col">
             <h2 className="text-xl font-bold border-b pb-2 mb-4">Current Order</h2>
             <div className="flex-grow overflow-y-auto">
@@ -136,17 +159,44 @@ const POSPage = () => {
             )}
             </div>
             <div className="border-t pt-4 mt-4">
-            <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-bold">Total</span>
-                <span className="text-2xl font-extrabold text-sky-700">Rp{totalAmount.toLocaleString('id-ID')}</span>
+              <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-bold">Total</span>
+                  <span className="text-2xl font-extrabold text-sky-700">Rp{totalAmount.toLocaleString('id-ID')}</span>
+              </div>
+              <button
+                  onClick={() => setIsCheckoutOpen(true)}
+                  disabled={cart.length === 0}
+                  className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                  Checkout
+              </button>
             </div>
-            <button 
-                onClick={() => setIsCheckoutOpen(true)}
-                disabled={cart.length === 0}
-                className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-                Checkout
-            </button>
+             {/* Today's Sales for Cashier */}
+            <div className="border-t pt-4 mt-4">
+                <h3 className="text-lg font-bold mb-2">Today's Sales</h3>
+                {loadingSales ? <p>Loading sales...</p> : (
+                    <>
+                        <div className="flex justify-between items-center mb-2 text-sm">
+                            <span className="font-semibold">Total Revenue Today:</span>
+                            <span className="font-bold text-green-700">Rp{todaysRevenue.toLocaleString('id-ID')}</span>
+                        </div>
+                        <div className="overflow-y-auto max-h-40">
+                            <ul className="text-xs divide-y">
+                                {todaysSales.map(sale => (
+                                    <li key={sale._id} className="py-2">
+                                        <div className="flex justify-between">
+                                            <div>
+                                              <span>{new Date(sale.createdAt).toLocaleTimeString()}</span>
+                                              <span className="text-gray-500"> by {sale.cashierId.username}</span>
+                                            </div>
+                                            <span className="font-semibold">Rp{sale.totalAmount.toLocaleString('id-ID')}</span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
         </div>
