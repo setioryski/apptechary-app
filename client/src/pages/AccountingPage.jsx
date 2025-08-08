@@ -2,11 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
 import ConfirmationModal from '../components/ConfirmationModal';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const AccountingPage = () => {
     const [expenses, setExpenses] = useState([]);
     const [sales, setSales] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [exporting, setExporting] = useState(false);
     const { showToast } = useToast();
 
     // Form state for new expense
@@ -16,6 +19,10 @@ const AccountingPage = () => {
 
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [expenseToDeleteId, setExpenseToDeleteId] = useState(null);
+
+    // State for date filtering
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     const fetchData = useCallback(async () => {
         try {
@@ -77,20 +84,122 @@ const AccountingPage = () => {
             setExpenseToDeleteId(null);
         }
     };
+    
+    // Filtered data based on date range
+    const filteredSales = sales.filter(sale => {
+        const saleDate = new Date(sale.createdAt);
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
+        if (start) start.setHours(0, 0, 0, 0);
+        if (end) end.setHours(23, 59, 59, 999);
+        if (start && saleDate < start) return false;
+        if (end && saleDate > end) return false;
+        return true;
+    });
 
-    const totalRevenue = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
-    const totalCOGS = sales.reduce((acc, sale) => 
-        acc + sale.items.reduce((itemAcc, item) => itemAcc + ((item.basePrice || 0) * item.quantity), 0), 
+    const filteredExpenses = expenses.filter(expense => {
+        const expenseDate = new Date(expense.date);
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
+        if (start) start.setHours(0, 0, 0, 0);
+        if (end) end.setHours(23, 59, 59, 999);
+        if (start && expenseDate < start) return false;
+        if (end && expenseDate > end) return false;
+        return true;
+    });
+
+
+    const totalRevenue = filteredSales.reduce((acc, sale) => acc + sale.totalAmount, 0);
+    const totalCOGS = filteredSales.reduce((acc, sale) =>
+        acc + sale.items.reduce((itemAcc, item) => itemAcc + ((item.basePrice || 0) * item.quantity), 0),
     0);
     const grossProfit = totalRevenue - totalCOGS;
-    const totalExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+    const totalExpenses = filteredExpenses.reduce((acc, expense) => acc + expense.amount, 0);
     const netIncome = grossProfit - totalExpenses;
+
+    const handleExport = () => {
+        setExporting(true);
+
+        setTimeout(() => {
+            const wb = XLSX.utils.book_new();
+
+            // Summary Sheet
+            const summaryData = [
+                ["Financial Summary", ""],
+                ["Date Range", `${startDate || 'Start'} to ${endDate || 'End'}`],
+                ["", ""], // Spacer
+                ["Total Revenue", totalRevenue],
+                ["Cost of Goods Sold (COGS)", totalCOGS],
+                ["Gross Profit", grossProfit],
+                ["Total Expenses", totalExpenses],
+                ["Net Income", netIncome],
+            ];
+            const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
+
+            // Sales Sheet
+            const salesData = filteredSales.map(sale => ({
+                Date: new Date(sale.createdAt).toLocaleString('id-ID'),
+                Cashier: sale.cashierId.username,
+                Items: sale.items.map(i => `${i.quantity}x ${i.name}`).join(', '),
+                Amount: sale.totalAmount,
+                PaymentMethod: sale.paymentMethod,
+            }));
+            const salesWs = XLSX.utils.json_to_sheet(salesData);
+            XLSX.utils.book_append_sheet(wb, salesWs, "Income from Sales");
+
+            // Expenses Sheet
+            const expensesData = filteredExpenses.map(exp => ({
+                Date: new Date(exp.date).toLocaleDateString('id-ID'),
+                Description: exp.description,
+                Category: exp.category,
+                Amount: exp.amount
+            }));
+            const expensesWs = XLSX.utils.json_to_sheet(expensesData);
+            XLSX.utils.book_append_sheet(wb, expensesWs, "Expenses");
+
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const fileName = `Accounting_Report_${startDate || 'start'}_to_${endDate || 'end'}.xlsx`;
+            saveAs(new Blob([wbout], { type: 'application/octet-stream' }), fileName);
+
+            setExporting(false);
+        }, 500); // Simulate processing time
+    };
+
 
     if (loading) return <div>Loading accounting data...</div>;
 
     return (
         <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Accounting</h1>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
+              <h1 className="text-2xl font-bold text-gray-800">Accounting</h1>
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <input
+                        type="date"
+                        id="startDate"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="p-2 border rounded-md text-sm"
+                    />
+                    <span className="text-gray-500">-</span>
+                    <input
+                        type="date"
+                        id="endDate"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="p-2 border rounded-md text-sm"
+                    />
+                </div>
+                <button
+                  onClick={handleExport}
+                  disabled={exporting}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 w-full sm:w-auto disabled:bg-gray-400"
+                >
+                  {exporting ? 'Exporting...' : 'Export to Excel'}
+                </button>
+              </div>
+            </div>
 
             {/* Financial Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -126,7 +235,7 @@ const AccountingPage = () => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {sales.map(sale => (
+                                {filteredSales.map(sale => (
                                     <tr key={sale._id}>
                                         <td className="px-6 py-4 whitespace-nowrap">{new Date(sale.createdAt).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">{sale.items.map(i => i.name).join(', ')}</td>
@@ -200,7 +309,7 @@ const AccountingPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {expenses.map(expense => (
+                                    {filteredExpenses.map(expense => (
                                         <tr key={expense._id}>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900">{expense.description}</div>
