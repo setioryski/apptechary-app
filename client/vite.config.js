@@ -55,7 +55,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'xlsx': 'xlsx/dist/xlsx.full.min.js',
+      'xlsx': 'xlsx/xlsx.mjs',
       'file-saver': 'file-saver/dist/FileSaver.min.js'
     }
   }
