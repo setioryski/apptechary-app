@@ -2,11 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
-import { fileURLToPath } from 'url'
-
-// Helper to get the directory name of the current module
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 export default defineConfig({
   plugins: [
@@ -47,6 +42,11 @@ export default defineConfig({
       }
     })
   ],
+  resolve: {
+    alias: {
+      'xlsx': path.resolve(__dirname, 'node_modules/xlsx/xlsx.js')
+    }
+  },
   server: {
     port: 3000,
     proxy: {
@@ -59,11 +59,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ['xlsx', 'file-saver'],
   },
-  resolve: {
-    alias: {
-      // Pointing to the absolute path of the module files
-      'xlsx': path.resolve(__dirname, 'node_modules/xlsx/xlsx.mjs'),
-      'file-saver': path.resolve(__dirname, 'node_modules/file-saver/dist/FileSaver.min.js')
-    }
-  }
 })
