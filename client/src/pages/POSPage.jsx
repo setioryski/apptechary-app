@@ -6,6 +6,39 @@ import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import CustomerModal from '../components/CustomerModal';
 
+// New component for viewing sale details
+const SaleDetailsModal = ({ sale, onClose }) => {
+    if (!sale) return null;
+    return (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+                <h3 className="text-lg font-bold mb-4">Order Details</h3>
+                <div className="text-sm mb-4">
+                    <p><strong>Time:</strong> {new Date(sale.createdAt).toLocaleTimeString()}</p>
+                    <p><strong>Cashier:</strong> {sale.cashierId.username}</p>
+                    {sale.customerId && <p><strong>Customer:</strong> {sale.customerId.name}</p>}
+                </div>
+                <ul className="divide-y max-h-60 overflow-y-auto">
+                    {sale.items.map(item => (
+                        <li key={item._id} className="flex justify-between py-2">
+                            <span>{item.quantity}x {item.name}</span>
+                            <span className="font-semibold">Rp{(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                        </li>
+                    ))}
+                </ul>
+                <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                    <span className="font-bold">Total</span>
+                    <span className="font-bold text-lg">Rp{sale.totalAmount.toLocaleString('id-ID')}</span>
+                </div>
+                <div className="flex justify-end mt-6">
+                    <button onClick={onClose} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Close</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 const POSPage = () => {
     const [cart, setCart] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +58,8 @@ const POSPage = () => {
     const [todaysSales, setTodaysSales] = useState([]);
     const [todaysRevenue, setTodaysRevenue] = useState(0);
     const [loadingSales, setLoadingSales] = useState(true);
+    const [viewingSale, setViewingSale] = useState(null);
+
 
     const fetchTodaysSales = async () => {
         setLoadingSales(true);
@@ -275,10 +310,14 @@ const POSPage = () => {
                                             <li key={sale._id} className="py-2">
                                                 <div className="flex justify-between">
                                                     <div>
-                                                        <span>{new Date(sale.createdAt).toLocaleTimeString()}</span>
+                                                        <span>{new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                         <span className="text-gray-500"> by {sale.cashierId.username}</span>
+                                                        {sale.customerId && <span className="text-blue-500"> ({sale.customerId.name})</span>}
                                                     </div>
-                                                    <span className="font-semibold">Rp{sale.totalAmount.toLocaleString('id-ID')}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-semibold">Rp{sale.totalAmount.toLocaleString('id-ID')}</span>
+                                                        <button onClick={() => setViewingSale(sale)} className="text-blue-600 hover:underline text-xs">Details</button>
+                                                    </div>
                                                 </div>
                                             </li>
                                         ))}
@@ -310,6 +349,10 @@ const POSPage = () => {
                     onClose={() => setIsCustomerModalOpen(false)}
                     onSave={handleSaveCustomer}
                 />
+            )}
+            
+            {viewingSale && (
+                <SaleDetailsModal sale={viewingSale} onClose={() => setViewingSale(null)} />
             )}
         </>
     );

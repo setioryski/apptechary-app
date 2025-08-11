@@ -214,7 +214,9 @@ exports.getTodaysSales = async (req, res) => {
         $lt: tomorrow,
       },
       status: 'Completed',
-    }).sort({ createdAt: -1 }).populate('cashierId', 'username');
+    }).sort({ createdAt: -1 })
+      .populate('cashierId', 'username')
+      .populate('customerId', 'name');
 
     const totalRevenue = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
 

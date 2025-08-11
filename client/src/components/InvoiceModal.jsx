@@ -83,9 +83,9 @@ const InvoiceModal = ({ sale, onClose }) => {
                     </div>
                     
                     {sale.customerId && (
-                        <div className="mt-6">
-                            <p className="text-sm text-gray-500">Customer:</p>
-                            <p className="font-medium text-gray-800">{sale.customerId.name}</p>
+                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <p className="text-sm font-semibold text-gray-700">Billed To:</p>
+                            <p className="font-medium text-gray-900">{sale.customerId.name}</p>
                             {sale.customerId.phone && <p className="text-sm text-gray-600">{sale.customerId.phone}</p>}
                             {sale.customerId.address && <p className="text-sm text-gray-600">{sale.customerId.address}</p>}
                         </div>
