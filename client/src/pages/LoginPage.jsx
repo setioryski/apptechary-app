@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSettings } from '../context/SettingsContext'; // Import useSettings
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -9,10 +10,19 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { settings } = useSettings(); // Get settings
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || "/";
+
+  useEffect(() => {
+    // Set document title from settings
+    if (settings.companyName) {
+      document.title = settings.companyName;
+    }
+  }, [settings.companyName]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +43,8 @@ const LoginPage = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="p-8 bg-white rounded-lg shadow-xl w-full max-w-sm">
-        <h2 className="text-3xl font-bold text-center text-sky-800 mb-2">Apothecary POS</h2>
+        {/* Use dynamic company name */}
+        <h2 className="text-3xl font-bold text-center text-sky-800 mb-2">{settings.companyName}</h2>
         <p className="text-center text-gray-500 mb-6">Please sign in to continue</p>
         
         <form onSubmit={handleSubmit}>

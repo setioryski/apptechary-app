@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext'; // Import useSettings
 import Toast from './Toast';
 
 const Layout = () => {
   const { user, logout } = useAuth();
+  const { settings } = useSettings(); // Get settings
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Set document title from settings
+    if (settings.companyName) {
+      document.title = settings.companyName;
+    }
+  }, [settings.companyName]);
 
   const handleLogout = () => {
     logout();
@@ -22,7 +31,8 @@ const Layout = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3">
             <div className="flex items-center space-x-4">
-              <span className="text-xl font-bold text-sky-800">Apothecary POS</span>
+              {/* Use dynamic company name */}
+              <span className="text-xl font-bold text-sky-800">{settings.companyName}</span>
               <div className="hidden md:flex items-center space-x-2">
                 {user?.role === 'Admin' && (
                   <>

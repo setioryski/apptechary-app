@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import path from 'path'
 
 export default defineConfig({
   plugins: [
@@ -13,8 +12,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       },
       manifest: {
-        name: 'Apothecary POS',
-        short_name: 'ApothecaryPOS',
+        name: 'Apothecary PWA',
+        short_name: 'ApothecaryPWA',
         description: 'Modern Point of Sale system for Apothecaries',
         theme_color: '#0284c7',
         background_color: "#ffffff",
@@ -42,11 +41,6 @@ export default defineConfig({
       }
     })
   ],
-  resolve: {
-    alias: {
-      'xlsx': path.resolve(__dirname, 'node_modules/xlsx/xlsx.js')
-    }
-  },
   server: {
     port: 3000,
     proxy: {
