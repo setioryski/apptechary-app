@@ -67,6 +67,7 @@ const AdminDashboard = () => {
         <DashboardCard to="/admin/accounting" title="Accounting" description="Track income & expenses." icon="🧾" />
         <DashboardCard to="/admin/categories" title="Manage Categories" description="Add or edit product categories." icon="🏷️" />
         <DashboardCard to="/admin/settings" title="Settings" description="Manage store information." icon="⚙️" />
+        <DashboardCard to="/admin/customers" title="Manage Customers" description="View and manage customer data." icon="🧑" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">

@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const SaleSchema = new mongoose.Schema({
   cashierId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  // Add customer field
+  customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: false },
   items: [{
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     name: { type: String, required: true },

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Sale = require('../models/Sale');
 const Product = require('../models/Product');
+const Customer = require('../models/Customer');
 
 // @desc    Get all selling products
 // @route   GET /api/sales/allselling
@@ -53,7 +54,7 @@ exports.getTopProducts = async (req, res) => {
 // @route   POST /api/sales
 // @access  Private
 exports.addSale = async (req, res) => {
-  const { items, totalAmount, paymentMethod } = req.body;
+  const { items, totalAmount, paymentMethod, customerId } = req.body;
 
   if (!items || items.length === 0) {
     return res.status(400).json({ message: 'No order items' });
@@ -66,6 +67,13 @@ exports.addSale = async (req, res) => {
     const productIds = items.map(item => item.productId);
     const products = await Product.find({ '_id': { $in: productIds } }).session(session);
 
+    if (customerId) {
+        const customer = await Customer.findById(customerId).session(session);
+        if (!customer) {
+            throw new Error(`Customer with id ${customerId} not found.`);
+        }
+    }
+
     const saleItems = items.map(item => {
         const product = products.find(p => p._id.toString() === item.productId);
         if (!product) {
@@ -73,7 +81,7 @@ exports.addSale = async (req, res) => {
         }
         return {
             ...item,
-            basePrice: product.basePrice // Get basePrice from the database
+            basePrice: product.basePrice
         };
     });
 
@@ -81,6 +89,7 @@ exports.addSale = async (req, res) => {
     const sale = new Sale({
       items: saleItems,
       cashierId: req.user._id,
+      customerId,
       totalAmount,
       paymentMethod,
       status: 'Completed',
@@ -97,7 +106,9 @@ exports.addSale = async (req, res) => {
     await session.commitTransaction();
 
     // Populate cashier info for the response
-    const populatedSale = await Sale.findById(createdSale._id).populate('cashierId', 'username');
+    const populatedSale = await Sale.findById(createdSale._id)
+        .populate('cashierId', 'username')
+        .populate('customerId', 'name phone');
     res.status(201).json(populatedSale);
 
   } catch (error) {
@@ -158,7 +169,9 @@ exports.retractSale = async (req, res) => {
 // @access  Private/Admin
 exports.getSales = async (req, res) => {
   try {
-    const sales = await Sale.find({}).sort({ createdAt: -1 }).populate('cashierId', 'username');
+    const sales = await Sale.find({}).sort({ createdAt: -1 })
+        .populate('cashierId', 'username')
+        .populate('customerId', 'name');
     res.json(sales);
   } catch (error) {
     res.status(500).json({ message: `Server Error: ${error.message}` });
@@ -170,7 +183,10 @@ exports.getSales = async (req, res) => {
 // @access  Private/Admin
 exports.getSaleById = async (req, res) => {
     try {
-        const sale = await Sale.findById(req.params.id).populate('cashierId', 'username').populate('items.productId', 'sku');
+        const sale = await Sale.findById(req.params.id)
+            .populate('cashierId', 'username')
+            .populate('items.productId', 'sku')
+            .populate('customerId', 'name phone address');
         if (sale) {
             res.json(sale);
         } else {
@@ -198,7 +214,7 @@ exports.getTodaysSales = async (req, res) => {
         $lt: tomorrow,
       },
       status: 'Completed',
-    }).sort({ createdAt: -1 }).populate('cashierId', 'username'); // <-- POPULATE aDDED
+    }).sort({ createdAt: -1 }).populate('cashierId', 'username');
 
     const totalRevenue = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
 

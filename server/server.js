@@ -25,6 +25,7 @@ app.use('/api/expenses', require('./routes/expenseRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/adjustments', require('./routes/adjustmentRoutes'));
+app.use('/api/customers', require('./routes/customerRoutes'));
 
 // --- Production Deployment Logic ---
 if (process.env.NODE_ENV === 'production') {

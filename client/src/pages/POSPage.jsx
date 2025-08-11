@@ -1,11 +1,10 @@
-// client/src/pages/POSPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import CheckoutModal from '../components/CheckoutModal';
 import InvoiceModal from '../components/InvoiceModal';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import CustomerModal from '../components/CustomerModal';
 
 const POSPage = () => {
     const [cart, setCart] = useState([]);
@@ -17,6 +16,11 @@ const POSPage = () => {
     const [completedSale, setCompletedSale] = useState(null);
     const { showToast } = useToast();
     const { user } = useAuth();
+
+    const [customers, setCustomers] = useState([]);
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+    const [customerSearchTerm, setCustomerSearchTerm] = useState('');
 
     const [todaysSales, setTodaysSales] = useState([]);
     const [todaysRevenue, setTodaysRevenue] = useState(0);
@@ -36,7 +40,6 @@ const POSPage = () => {
         }
     };
 
-
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -50,7 +53,18 @@ const POSPage = () => {
             }
         };
 
+        const fetchCustomers = async () => {
+            try {
+                const { data } = await api.get('/customers');
+                setCustomers(data);
+            } catch (error) {
+                console.error("Failed to fetch customers", error);
+                showToast('Error fetching customers', 'error');
+            }
+        };
+
         fetchProducts();
+        fetchCustomers();
         fetchTodaysSales();
     }, [showToast]);
 
@@ -97,7 +111,6 @@ const POSPage = () => {
         });
     };
 
-
     const handleConfirmCheckout = async (paymentMethod) => {
         const saleData = {
             items: cart.map(({ _id, name, price, basePrice, quantity }) => ({
@@ -109,6 +122,7 @@ const POSPage = () => {
             })),
             totalAmount,
             paymentMethod,
+            customerId: selectedCustomer ? selectedCustomer._id : null,
         };
 
         try {
@@ -117,11 +131,25 @@ const POSPage = () => {
             setIsCheckoutOpen(false);
             setIsInvoiceOpen(true);
             setCart([]);
+            setSelectedCustomer(null);
+            setCustomerSearchTerm('');
             showToast('Sale completed successfully!', 'success');
             fetchTodaysSales();
         } catch (error) {
             console.error("Failed to create sale", error);
             showToast(error.response?.data?.message || 'Failed to complete sale.', 'error');
+        }
+    };
+
+    const handleSaveCustomer = async (customerData) => {
+        try {
+            const { data: newCustomer } = await api.post('/customers', customerData);
+            setCustomers(prev => [...prev, newCustomer].sort((a,b) => a.name.localeCompare(b.name)));
+            setSelectedCustomer(newCustomer);
+            showToast('Customer added successfully!', 'success');
+            setIsCustomerModalOpen(false);
+        } catch (error) {
+            showToast(error.response?.data?.message || 'Failed to add customer.', 'error');
         }
     };
 
@@ -163,6 +191,40 @@ const POSPage = () => {
 
                 {/* Cart & Sales Info Section */}
                 <div className="lg:w-1/3 bg-white p-4 rounded-lg shadow-sm flex flex-col">
+                    <div className="border-b pb-4 mb-4">
+                        <h2 className="text-xl font-bold mb-2">Customer</h2>
+                        {selectedCustomer ? (
+                            <div className="flex justify-between items-center bg-sky-100 p-2 rounded-lg">
+                                <div>
+                                    <p className="font-semibold text-sky-800">{selectedCustomer.name}</p>
+                                    <p className="text-xs text-sky-600">{selectedCustomer.phone}</p>
+                                </div>
+                                <button onClick={() => { setSelectedCustomer(null); setCustomerSearchTerm(''); }} className="text-red-500 font-semibold text-sm">Remove</button>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="flex gap-2">
+                                    <select 
+                                        value={customerSearchTerm}
+                                        onChange={(e) => {
+                                            const custId = e.target.value;
+                                            setCustomerSearchTerm(custId);
+                                            setSelectedCustomer(customers.find(c => c._id === custId) || null);
+                                        }}
+                                        className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                    >
+                                        <option value="">Select a customer...</option>
+                                        {customers.map(cust => (
+                                            <option key={cust._id} value={cust._id}>
+                                                {cust.name} {cust.phone && `(${cust.phone})`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button onClick={() => setIsCustomerModalOpen(true)} className="bg-blue-500 text-white p-2 rounded-lg text-sm">New</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                     <h2 className="text-xl font-bold border-b pb-2 mb-4">Current Order</h2>
                     <div className="flex-grow overflow-y-auto">
                         {cart.length === 0 ? (
@@ -240,6 +302,13 @@ const POSPage = () => {
                 <InvoiceModal
                     sale={completedSale}
                     onClose={() => setIsInvoiceOpen(false)}
+                />
+            )}
+
+            {isCustomerModalOpen && (
+                <CustomerModal
+                    onClose={() => setIsCustomerModalOpen(false)}
+                    onSave={handleSaveCustomer}
                 />
             )}
         </>

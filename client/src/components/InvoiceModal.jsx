@@ -60,7 +60,6 @@ const InvoiceModal = ({ sale, onClose }) => {
                             <h2 className="text-2xl font-bold text-gray-800">Invoice</h2>
                             <p className="text-sm text-gray-500 break-all">ID: {sale._id}</p>
                         </div>
-                        {/* THIS SECTION IS NOW DYNAMIC */}
                         <div className="text-right">
                             <h3 className="text-lg font-semibold text-sky-800">{settings.companyName}</h3>
                             <p className="text-sm text-gray-500">{settings.address}</p>
@@ -82,6 +81,15 @@ const InvoiceModal = ({ sale, onClose }) => {
                             <p className="font-medium text-gray-800">{sale.paymentMethod}</p>
                         </div>
                     </div>
+                    
+                    {sale.customerId && (
+                        <div className="mt-6">
+                            <p className="text-sm text-gray-500">Customer:</p>
+                            <p className="font-medium text-gray-800">{sale.customerId.name}</p>
+                            {sale.customerId.phone && <p className="text-sm text-gray-600">{sale.customerId.phone}</p>}
+                            {sale.customerId.address && <p className="text-sm text-gray-600">{sale.customerId.address}</p>}
+                        </div>
+                    )}
 
                     {/* Items Table */}
                     <div className="overflow-x-auto">

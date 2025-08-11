@@ -13,7 +13,8 @@ import AccountingPage from './pages/AccountingPage';
 import SalesReportsPage from './pages/SalesReportsPage';
 import CategoryPage from './pages/CategoryPage';
 import SettingsPage from './pages/SettingsPage';
-import AllSellingProductsPage from './pages/AllSellingProductsPage'; // <-- IMPORT THIS
+import CustomersPage from './pages/CustomersPage';
+import AllSellingProductsPage from './pages/AllSellingProductsPage';
 
 const App = () => {
     const { isAuthenticated, user } = useAuth();
@@ -70,7 +71,11 @@ const App = () => {
                         <SettingsPage />
                     </ProtectedRoute>
                 } />
-                {/* ADD THIS ROUTE */}
+                <Route path="/admin/customers" element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <CustomersPage />
+                    </ProtectedRoute>
+                } />
                 <Route path="/admin/reports/all-selling" element={
                     <ProtectedRoute allowedRoles={['Admin']}>
                         <AllSellingProductsPage />
