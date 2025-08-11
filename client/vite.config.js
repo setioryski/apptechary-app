@@ -53,4 +53,9 @@ export default defineConfig({
   optimizeDeps: {
     include: ['xlsx', 'file-saver'],
   },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    }
+  }
 })
