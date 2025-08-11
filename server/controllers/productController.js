@@ -1,3 +1,4 @@
+// server/controllers/productController.js
 const Product = require('../models/Product');
 const Settings = require('../models/Settings'); // Import Settings model
 

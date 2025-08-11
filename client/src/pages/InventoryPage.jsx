@@ -1,17 +1,21 @@
+// client/src/pages/InventoryPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import ProductModal from '../components/ProductModal';
-import StockAdjustmentModal from '../components/StockAdjustmentModal.jsx'; // Corrected import path
-import { useToast } from '../context/ToastContext'; 
+import StockAdjustmentModal from '../components/StockAdjustmentModal.jsx';
+import ConfirmationModal from '../components/ConfirmationModal';
+import { useToast } from '../context/ToastContext';
 
 const InventoryPage = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-    const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false); 
+    const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const { showToast } = useToast(); 
+    const { showToast } = useToast();
 
     const fetchData = async () => {
         setLoading(true);
@@ -39,14 +43,20 @@ const InventoryPage = () => {
         setIsProductModalOpen(true);
     };
 
-    const handleOpenAdjustmentModal = (product) => { 
+    const handleOpenAdjustmentModal = (product) => {
         setSelectedProduct(product);
         setIsAdjustmentModalOpen(true);
+    };
+
+    const handleOpenConfirmModal = (product) => {
+        setSelectedProduct(product);
+        setIsConfirmModalOpen(true);
     };
 
     const handleCloseModals = () => {
         setIsProductModalOpen(false);
         setIsAdjustmentModalOpen(false);
+        setIsConfirmModalOpen(false);
         setSelectedProduct(null);
     };
 
@@ -77,6 +87,20 @@ const InventoryPage = () => {
         } catch (error) {
             console.error("Failed to save adjustment", error);
             showToast(error.response?.data?.message || 'Failed to adjust stock.', 'error');
+        }
+    };
+
+    const handleDeleteProduct = async () => {
+        if (!selectedProduct) return;
+        try {
+            await api.delete(`/products/${selectedProduct._id}`);
+            setProducts(products.filter(p => p._id !== selectedProduct._id));
+            showToast('Product deleted successfully!', 'success');
+        } catch (error) {
+            console.error("Failed to delete product", error);
+            showToast('Failed to delete product.', 'error');
+        } finally {
+            handleCloseModals();
         }
     };
 
@@ -132,6 +156,12 @@ const InventoryPage = () => {
                                     >
                                         Edit
                                     </button>
+                                    <button
+                                        onClick={() => handleOpenConfirmModal(product)}
+                                        className="text-red-600 hover:text-red-900"
+                                    >
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -148,10 +178,10 @@ const InventoryPage = () => {
                                 <h3 className="text-lg font-bold text-gray-900">{product.name}</h3>
                                 <p className="text-sm text-gray-500">SKU: {product.sku}</p>
                             </div>
-                            <div>
+                            <div className="flex flex-col space-y-2">
                                 <button
                                     onClick={() => handleOpenAdjustmentModal(product)}
-                                    className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full mb-2 w-full text-center"
+                                    className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full w-full text-center"
                                 >
                                     Adjust
                                 </button>
@@ -160,6 +190,12 @@ const InventoryPage = () => {
                                     className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full w-full text-center"
                                 >
                                     Edit
+                                </button>
+                                <button
+                                    onClick={() => handleOpenConfirmModal(product)}
+                                    className="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-full w-full text-center"
+                                >
+                                    Delete
                                 </button>
                             </div>
                         </div>
@@ -203,6 +239,15 @@ const InventoryPage = () => {
                     product={selectedProduct}
                     onClose={handleCloseModals}
                     onSave={handleSaveAdjustment}
+                />
+            )}
+            {isConfirmModalOpen && (
+                <ConfirmationModal
+                    isOpen={isConfirmModalOpen}
+                    onClose={handleCloseModals}
+                    onConfirm={handleDeleteProduct}
+                    title="Confirm Deletion"
+                    message={`Are you sure you want to delete ${selectedProduct?.name}? This action cannot be undone.`}
                 />
             )}
         </div>
