@@ -7,7 +7,8 @@ const {
   retractSale,
   getTopProducts,
   getAllSellingProducts,
-  getTodaysSales, // <-- IMPORT THIS
+  getTodaysSales,
+  deleteSale, // <-- IMPORT THE NEW FUNCTION
 } = require('../controllers/saleController');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
@@ -19,7 +20,9 @@ router.get('/allselling', protect, isAdmin, getAllSellingProducts);
 // ADD THIS ROUTE for cashiers to get their daily sales
 router.get('/today', protect, getTodaysSales);
 
-router.route('/:id').get(protect, isAdmin, getSaleById);
+router.route('/:id')
+    .get(protect, isAdmin, getSaleById)
+    .delete(protect, isAdmin, deleteSale); // <-- ADDED DELETE METHOD
 
 router.route('/:id/retract').put(protect, isAdmin, retractSale);
 

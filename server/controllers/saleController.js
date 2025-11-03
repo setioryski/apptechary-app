@@ -225,3 +225,28 @@ exports.getTodaysSales = async (req, res) => {
     res.status(500).json({ message: `Server Error: ${error.message}` });
   }
 };
+
+// @desc    Delete a sale
+// @route   DELETE /api/sales/:id
+// @access  Private/Admin
+exports.deleteSale = async (req, res) => {
+    try {
+        const sale = await Sale.findById(req.params.id);
+
+        if (!sale) {
+            return res.status(404).json({ message: 'Sale not found' });
+        }
+
+        // Only allow deletion if the sale is already retracted
+        if (sale.status !== 'Retracted') {
+            return res.status(400).json({ message: 'Sale must be retracted before it can be deleted' });
+        }
+
+        await sale.deleteOne();
+        res.json({ message: 'Sale deleted successfully' });
+
+    } catch (error) {
+        console.error(`Sale deletion error: ${error.message}`);
+        res.status(500).json({ message: `Server Error: ${error.message}` });
+    }
+};

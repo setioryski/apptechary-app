@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import InvoiceModal from '../components/InvoiceModal';
-import ConfirmationModal from '../components/ConfirmationModal'; // Import the new modal
+import ConfirmationModal from '../components/ConfirmationModal';
 import { useToast } from '../context/ToastContext';
 
 const SalesReportsPage = () => {
@@ -9,8 +9,15 @@ const SalesReportsPage = () => {
     const [loading, setLoading] = useState(true);
     const [selectedSale, setSelectedSale] = useState(null);
     const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+    
+    // State for retraction confirmation
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [saleToRetractId, setSaleToRetractId] = useState(null);
+
+    // --- ADD STATE FOR DELETE CONFIRMATION ---
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [saleToDeleteId, setSaleToDeleteId] = useState(null);
+
     const { showToast } = useToast();
 
     const fetchSales = useCallback(async () => {
@@ -41,13 +48,13 @@ const SalesReportsPage = () => {
         }
     };
     
-    // Opens the confirmation modal
+    // Opens the retraction confirmation modal
     const handleRetractClick = (saleId) => {
         setSaleToRetractId(saleId);
         setIsConfirmModalOpen(true);
     };
 
-    // The actual retract logic, called when confirm is clicked in the modal
+    // The actual retract logic
     const confirmRetraction = async () => {
         if (!saleToRetractId) return;
         try {
@@ -63,6 +70,38 @@ const SalesReportsPage = () => {
         }
     };
 
+    // --- ADD HANDLERS FOR DELETION ---
+
+    const handleDeleteClick = (saleId) => {
+        setSaleToDeleteId(saleId);
+        setIsDeleteConfirmOpen(true);
+    };
+
+    const confirmDeletion = async () => {
+        if (!saleToDeleteId) return;
+        try {
+            await api.delete(`/sales/${saleToDeleteId}`);
+            showToast('Sale deleted successfully!', 'success');
+            fetchSales(); // Refresh the sales list
+        } catch (error) {
+            console.error("Failed to delete sale", error);
+            showToast(error.response?.data?.message || 'Failed to delete sale.', 'error');
+        } finally {
+            setIsDeleteConfirmOpen(false);
+            setSaleToDeleteId(null);
+        }
+    };
+
+    // --- HELPER TO CLOSE ALL MODALS ---
+    const handleCloseModals = () => {
+        setIsInvoiceModalOpen(false);
+        setIsConfirmModalOpen(false);
+        setSaleToRetractId(null);
+        setIsDeleteConfirmOpen(false);
+        setSaleToDeleteId(null);
+    };
+
+    // ... (getStatusBadge function remains unchanged) ...
     const getStatusBadge = (status) => {
         switch (status) {
             case 'Completed':
@@ -82,6 +121,7 @@ const SalesReportsPage = () => {
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">Sales Reports</h1>
                 <div className="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
+                        {/* ... (thead remains unchanged) ... */}
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -97,6 +137,7 @@ const SalesReportsPage = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {sales.map(sale => (
                                 <tr key={sale._id} className={sale.status === 'Retracted' ? 'bg-red-50' : ''}>
+                                    {/* ... (other tds remain unchanged) ... */}
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(sale.createdAt).toLocaleString()}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sale.cashierId.username}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sale.customerId?.name || 'N/A'}</td>
@@ -110,7 +151,9 @@ const SalesReportsPage = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rp{sale.totalAmount.toLocaleString('id-ID')}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sale.paymentMethod}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getStatusBadge(sale.status)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                                    
+                                    {/* --- MODIFY THIS ACTIONS CELL --- */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                         <button
                                             onClick={() => handlePrintClick(sale._id)}
                                             className="text-indigo-600 hover:text-indigo-900"
@@ -120,9 +163,17 @@ const SalesReportsPage = () => {
                                         <button
                                             onClick={() => handleRetractClick(sale._id)}
                                             disabled={sale.status === 'Retracted'}
-                                            className="text-red-600 hover:text-red-900 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                            className="text-yellow-600 hover:text-yellow-900 disabled:text-gray-400 disabled:cursor-not-allowed"
                                         >
                                             Retract
+                                        </button>
+                                        {/* --- ADD THIS DELETE BUTTON --- */}
+                                        <button
+                                            onClick={() => handleDeleteClick(sale._id)}
+                                            disabled={sale.status !== 'Retracted'}
+                                            className="text-red-600 hover:text-red-900 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                        >
+                                            Delete
                                         </button>
                                     </td>
                                 </tr>
@@ -135,19 +186,25 @@ const SalesReportsPage = () => {
             {isInvoiceModalOpen && (
                 <InvoiceModal
                     sale={selectedSale}
-                    onClose={() => setIsInvoiceModalOpen(false)}
+                    onClose={handleCloseModals} // Use unified close handler
                 />
             )}
 
             <ConfirmationModal
                 isOpen={isConfirmModalOpen}
-                onClose={() => {
-                    setIsConfirmModalOpen(false);
-                    setSaleToRetractId(null);
-                }}
+                onClose={handleCloseModals} // Use unified close handler
                 onConfirm={confirmRetraction}
                 title="Confirm Sale Retraction"
                 message="Are you sure you want to retract this sale? This action cannot be undone and will restore the items to inventory."
+            />
+
+            {/* --- ADD THE DELETE CONFIRMATION MODAL --- */}
+            <ConfirmationModal
+                isOpen={isDeleteConfirmOpen}
+                onClose={handleCloseModals}
+                onConfirm={confirmDeletion}
+                title="Confirm Sale Deletion"
+                message="Are you sure you want to permanently delete this retracted sale? This action cannot be undone."
             />
         </>
     );
