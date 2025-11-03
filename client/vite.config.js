@@ -53,4 +53,11 @@ export default defineConfig({
   optimizeDeps: {
     include: ['xlsx', 'file-saver'],
   },
+  // Add this section to fix the build error
+  build: {
+    commonjsOptions: {
+      include: /node_modules/,
+      transformMixedEsModules: true,
+    }
+  }
 })
